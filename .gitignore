@@ -5,4 +5,4 @@
 *.log
 
 ## nextflow intermediate files
-nxf-temp*
+nxf-temp.*
