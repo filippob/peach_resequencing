@@ -2,7 +2,7 @@
 set -euxo pipefail
 
 ## script to read an input vcf file from the Nextflow resequencing-mem pipeline and
-## keep only BIALLELIC SNPs
+## keep only BIALLELIC SNPs; results are written to a new vcf file and tabix-indexed
 
 ### files and folders
 input_file=$1
