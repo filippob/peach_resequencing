@@ -32,6 +32,9 @@ then
 fi
 
 
+## stat report from bcftools on the input file
+singularity run -B /home/freeclimb/:/home/freeclimb/ ${bcftools_img} bcftools stats ${input_file} > ${outdir}/bcftools.input.stats
+
 echo "analysing data from ${input_file}"
 outfile="$homefolder/$outdir/snps_only.vcf.gz"
 echo "will be writing out to file $outfile"
@@ -57,6 +60,6 @@ nvars=`singularity run -B /home/freeclimb/:/home/freeclimb/ ${bcftools_img} bcft
 echo "n. of output variants from $outfile is $nvars"
 
 ## stat report from bcftools
-singularity run -B /home/freeclimb/:/home/freeclimb/ ${bcftools_img} bcftools stats $outfile > ${outdir}/bcftools.stats
+singularity run -B /home/freeclimb/:/home/freeclimb/ ${bcftools_img} bcftools stats $outfile > ${outdir}/bcftools.snp_only.stats
 
 echo "DONE!!"
