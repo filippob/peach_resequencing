@@ -36,10 +36,27 @@ echo "analysing data from ${input_file}"
 outfile="$homefolder/$outdir/snps_only.vcf.gz"
 echo "will be writing out to file $outfile"
 
-echo " - extracting only biallelic SNPs from the input vcf file"
-singularity run -B /home/freeclimb/:/home/freeclimb/ ${bcftools_img} bcftools view --types $vartype -m ${min_allele} -M ${max_allele} ${input_file} --output $outfile
+if [ -f "$outfile" ]; then
+    	
+	echo "$outfile exists. Skip the filtering step"
 
-echo " - indexing the subset vcf file with tabix"
-singularity run -B /home/freeclimb/:/home/freeclimb/ ${bcftools_img} tabix $outfile
+else
+	echo " - extracting only biallelic SNPs from the input vcf file"
+	singularity run -B /home/freeclimb/:/home/freeclimb/ ${bcftools_img} bcftools view --types $vartype -m ${min_allele} -M ${max_allele} ${input_file} --output $outfile
+
+	echo " - indexing the subset vcf file with tabix"
+	singularity run -B /home/freeclimb/:/home/freeclimb/ ${bcftools_img} tabix $outfile
+fi
+
+## counting n. of samples
+nsamples=`singularity run -B /home/freeclimb/:/home/freeclimb/ ${bcftools_img} bcftools query -l $outfile | wc -l`
+echo "n. of output samples from $outfile is $nsamples"
+
+## counting n. of variants
+nvars=`singularity run -B /home/freeclimb/:/home/freeclimb/ ${bcftools_img} bcftools query -f '%POS\n' $outfile | wc -l`
+echo "n. of output variants from $outfile is $nvars"
+
+## stat report from bcftools
+singularity run -B /home/freeclimb/:/home/freeclimb/ ${bcftools_img} bcftools stats $outfile > ${outdir}/bcftools.stats
 
 echo "DONE!!"
