@@ -4,6 +4,11 @@ the current version of the script looks into subfolders,
 for a different structure of folders and files, the script needs to be revised
 """
 
+"""
+RUN AS:
+python3 make_sample_sheet.py --target_dir=<path_to_files> --output_dir=<config_folder> --label=<sequencing_tag>
+"""
+
 ## IMPORT LIBRARIES
 import re
 import csv
