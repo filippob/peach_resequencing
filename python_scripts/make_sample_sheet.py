@@ -16,7 +16,7 @@ from collections import OrderedDict
 parser = argparse.ArgumentParser(description='Make the sample sheet file for the resequencing-mem pipeline')
 
 # Add arguments
-parser.add_argument('-t', '--target_folder', type=str, required=True, 
+parser.add_argument('-t', '--target_dir', type=str, required=True, 
                     help='name of the target folder from where the R1 and R2 fastq files must be read')
 parser.add_argument('-s', '--output_dir', type=str, required=True, 
                     help='directory where the sample sheet is to be stored (created if needed)')
@@ -27,13 +27,13 @@ parser.add_argument('-l', '--label', type=str, required=True,
 args = parser.parse_args()
 
 # Print to check arguments values
-print('Target folder is:', args.target_folder)
+print('Target folder is:', args.target_dir)
 print('Output folder is:', args.output_dir)
 print('Sequencing run label is:', args.label)
 
 ## PARAMETERS
-path_to_files = args.target_folder
-outdir = args.output_folder
+path_to_files = args.target_dir
+outdir = args.output_dir
 label = args.label
 
 #%% read files from folder
