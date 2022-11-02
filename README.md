@@ -7,4 +7,7 @@ Scripts for variant calling from resequencing data on peach accessions (Prunus p
 Bash scripts to use `bcftools` and `vcftools` to subset the vcf file from variant calling and to produce summary statistics
 
 1. normalise_vcf.sh: sometimes Freebayes adds the whole haplotype around a SNP --> need to remove the non-polymorphic sites and leave only yhe SNP
-2. filter (take only SNP)
+2. snp_only_from_vcf.sh: take only biallelic SNPs (remove MNPs/Indels, triallelic sites)
+3. stats: frequency, missing rate
+4. quality filter: how?
+5. merge?
