@@ -45,8 +45,9 @@ label = args.label
 #path_to_files = "/home/filippo/Documents/freeclimb/VariantCalling/mock_data"
 #outdir = "/home/filippo/Documents/freeclimb/VariantCalling/Config"
 #label = "BGI" ## identifier of the sequencing batch (e.g. IGA, BGI etc.)
-r1_identifier = 'r1.fq.gz'
-r2_identifier = 'r2.fq.gz'
+r1_identifier = '_1.fq.gz'
+r2_identifier = '_2.fq.gz'
+
 #%% read files from folder
 p = Path(path_to_files)
 
