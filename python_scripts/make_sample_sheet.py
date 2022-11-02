@@ -10,6 +10,7 @@ python3 make_sample_sheet.py --target_dir=<path_to_files> --output_dir=<config_f
 """
 
 ## IMPORT LIBRARIES
+import os
 import re
 import csv
 import argparse
@@ -75,13 +76,15 @@ print('n. of samples from sample_folders:',len(sample_folders))
 print('n. of records in sample_dict:',len(sample_files))
 
 #%% convert list of dict to pandas dataframe
-## then convert from long to wide format
+## add r1 and r2 file columns, remove NAs, take root file name
 df = pd.DataFrame(sample_files)
 df_long = pd.melt(df, id_vars=['sample'], value_vars=['fastq_1','fastq_2'], 
                   var_name = 'paired-end_file', value_name='file_path', ignore_index=True)
 df_long = df_long.dropna()
-df_long['key']=df_long.groupby(['sample','paired-end_file']).cumcount()
-df = pd.pivot_table(df_long, index = ['key','sample'], columns = ['paired-end_file'], 
+df_long['root_name'] = [re.sub("\\..*$","",os.path.basename(x)) for x in df_long['file_path']]
+
+#%% now convert from long to wide format
+df = pd.pivot_table(df_long, index = ['root_name','sample'], columns = ['paired-end_file'], 
                          values = ['file_path'], aggfunc=lambda x: x) #Reshape from long to wide
 df.index.name = None
 
