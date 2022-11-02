@@ -36,11 +36,17 @@ print('Target folder is:', args.target_dir)
 print('Output folder is:', args.output_dir)
 print('Sequencing run label is:', args.label)
 
+#%%
 ## PARAMETERS
 path_to_files = args.target_dir
 outdir = args.output_dir
 label = args.label
 
+#path_to_files = "/home/filippo/Documents/freeclimb/VariantCalling/mock_data"
+#outdir = "/home/filippo/Documents/freeclimb/VariantCalling/Config"
+#label = "BGI" ## identifier of the sequencing batch (e.g. IGA, BGI etc.)
+r1_identifier = 'r1.fq.gz'
+r2_identifier = 'r2.fq.gz'
 #%% read files from folder
 p = Path(path_to_files)
 
@@ -51,23 +57,39 @@ for x in p.iterdir():
         sample_folders.append(x.name)
 
 ## read sample file names
-sample_dict = []
+sample_files = []
 for smp in range(len(sample_folders)):
     sample = sample_folders[smp]
     p = Path(path_to_files).joinpath(sample)
-    temp_dict = {'sample':sample}
     for x in p.iterdir():
         print('sample: ',sample,'file: ',x.name)
-        if '_1.fq.gz' in x.name:
+        temp_dict = {'sample':sample}
+        if r1_identifier in x.name:
             temp_dict['fastq_1'] = x
-        if '_2.fq.gz' in x.name:
+        if r2_identifier in x.name:
             temp_dict['fastq_2'] = x
+        #temp_dict['file'] = x
+        sample_files.append(temp_dict)
+    
+print('n. of samples from sample_folders:',len(sample_folders))
+print('n. of records in sample_dict:',len(sample_files))
 
-    sample_dict.append(temp_dict)
-    #sample_dict.append(OrderedDict(sorted(temp_dict.items())))
+#%% convert list of dict to pandas dataframe
+## then convert from long to wide format
+df = pd.DataFrame(sample_files)
+df_long = pd.melt(df, id_vars=['sample'], value_vars=['fastq_1','fastq_2'], 
+                  var_name = 'paired-end_file', value_name='file_path', ignore_index=True)
+df_long = df_long.dropna()
+df_long['key']=df_long.groupby(['sample','paired-end_file']).cumcount()
+df = pd.pivot_table(df_long, index = ['key','sample'], columns = ['paired-end_file'], 
+                         values = ['file_path'], aggfunc=lambda x: x) #Reshape from long to wide
+df.index.name = None
 
-print('n. of records in sample_dict:',len(sample_dict))
+#%% Normalize column names
+df.reset_index(inplace=True)
+df.columns = [x[1] if x[1] != '' else x[0] for x in df.columns]
 
+#%% save out file
 fname = Path(outdir).joinpath(label + '_sample_sheet.csv')
 print('writing file names to {}'.format(fname))
 #with open(fname, 'w', newline='') as output_file:
@@ -76,7 +98,7 @@ print('writing file names to {}'.format(fname))
 #    dict_writer.writerows(sample_dict)
 
 ## converting to Pandas dataframe and writing out
-df = pd.DataFrame(sample_dict)
+#df = pd.DataFrame(sample_dict)
 cols = ['sample', 'fastq_1', 'fastq_2']
 df = df[cols]
 df.to_csv(fname, index=False)
