@@ -46,8 +46,11 @@ label = args.label
 #path_to_files = "/home/filippo/Documents/freeclimb/VariantCalling/mock_data"
 #outdir = "/home/filippo/Documents/freeclimb/VariantCalling/Config"
 #label = "BGI" ## identifier of the sequencing batch (e.g. IGA, BGI etc.)
-r1_identifier = '_1.fq.gz'
-r2_identifier = '_2.fq.gz'
+#r1_identifier = '_1.fq.gz'
+#r2_identifier = '_2.fq.gz'
+r1_identifier = '_R1_'
+r2_identifier = '_R2_'
+# !! CHECK REGULAR EXPRESSION BELOW !!
 # !! CHECK REGULAR EXPRESSION BELOW !!
 
 #%% read files from folder
@@ -83,8 +86,10 @@ df = pd.DataFrame(sample_files)
 df_long = pd.melt(df, id_vars=['sample'], value_vars=['fastq_1','fastq_2'], 
                   var_name = 'paired-end_file', value_name='file_path', ignore_index=True)
 df_long = df_long.dropna()
+
 ## !! MIND YOU: YOU MAY NEED TO MODIFY THE REGULAR EXPRESSION BELOW DEPENDING ON THE PATTERN OF YOUR FILE NAMES !!
-df_long['root_name'] = [re.sub("\\_[0-9].*$","",os.path.basename(x)) for x in df_long['file_path']]
+#df_long['root_name'] = [re.sub("\\_[0-9].*$","",os.path.basename(x)) for x in df_long['file_path']]
+df_long['root_name'] = [re.sub("\\_R[0-9]|\\..*$","",os.path.basename(x)) for x in df_long['file_path']]
 
 #%% now convert from long to wide format
 df = pd.pivot_table(df_long, index = ['root_name','sample'], columns = ['paired-end_file'], 
