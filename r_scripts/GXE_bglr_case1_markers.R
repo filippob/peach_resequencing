@@ -4,12 +4,49 @@
 
 # (1) As a random regression on markers
 
-library(BGLR)
-data(wheat)
-Y=wheat.Y # grain yield evaluated in 4 different environments (599 samples)
-round(cor(Y),2) # correlation between yields in the 4 environments (round with 2 decimals)
+# INPUT CONFIGURATION MANAGEMENT ------------------------------------------
+args = commandArgs(trailingOnly=TRUE)
+if (length(args) == 1){
+  #loading the parameters
+  source(args[1])
+} else {
+  #this is the default configuration, used for development and debug
+  writeLines('Using default config')
+  
+  #this dataframe should be always present in config files, and declared
+  #as follows
+  config = NULL
+  config = rbind(config, data.frame(
+    base_folder = '~/Documents/freeclimb/g_x_e',
+    y = 'data/phenotypes.csv',
+    X = 'data/markers.csv',
+    outdir = 'Analysis/BGLR',
+    force_overwrite = FALSE
+  ))
+  
+}
 
-X=scale(wheat.X)/sqrt(ncol(wheat.X))   # scaled genotypes (599 samples x 1279 markers)
+# SETUP -------------------------------------------------------------------
+library("BGLR")
+library("knitr")
+library("data.table")
+
+
+# READ THE DATA -------------------------------------------------------------------
+## phenotypes (same phenotypes, multiple envs (maybe also multiple years))
+fname = file.path(config$base_folder, config$y) 
+Y = fread(fname, header = TRUE) # grain yield evaluated in 4 different environments (599 samples, 4 columns)
+## markers
+fname = file.path(config$base_folder, config$X) 
+X = fread(fname, header = TRUE) ## 599 samples, 1279 markers (DArT markers --> 0/1)
+
+
+print("raw correlations between phenotypes")
+print(kable(round(cor(Y),2))) # correlation between yields in the 4 environments (round with 2 decimals)
+
+writeLines(" - scaling marker data")
+X = scale(X)/sqrt(ncol(X))   # scaled genotypes (599 samples x 1279 markers) ## why /sqrt(ncols) ??
+
 
 y2=Y[,2]  # 599 yield in env 2
 y3=Y[,3]  # 599 yield in env 3
