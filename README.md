@@ -11,3 +11,7 @@ Bash scripts to use `bcftools` and `vcftools` to subset the vcf file from varian
 3. stats: frequency, missing rate
 4. quality filter: how?
 5. merge?
+
+## GxE interactions
+
+1. approaches with BGLR from https://github.com/gdlc/BGLR-R/blob/master/inst/md/GxE_usingInteractions.md
