@@ -20,6 +20,8 @@ if (length(args) == 1){
     base_folder = '~/Documents/freeclimb/g_x_e',
     y = 'data/phenotypes.csv',
     X = 'data/markers.csv',
+    nIter = 3000,
+    burnIn = 500,
     outdir = 'Analysis/BGLR',
     force_overwrite = FALSE
   ))
@@ -29,6 +31,7 @@ if (length(args) == 1){
 # SETUP -------------------------------------------------------------------
 library("BGLR")
 library("knitr")
+library("tidyverse")
 library("data.table")
 
 
@@ -40,6 +43,7 @@ Y = fread(fname, header = TRUE) # grain yield evaluated in 4 different environme
 fname = file.path(config$base_folder, config$X) 
 X = fread(fname, header = TRUE) ## 599 samples, 1279 markers (DArT markers --> 0/1)
 
+ntraits = ncol(Y) 
 
 print("raw correlations between phenotypes")
 print(kable(round(cor(Y),2))) # correlation between yields in the 4 environments (round with 2 decimals)
@@ -48,22 +52,31 @@ writeLines(" - scaling marker data")
 X = scale(X)/sqrt(ncol(X))   # scaled genotypes (599 samples x 1279 markers) ## why /sqrt(ncols) ??
 
 
-y2=Y[,2]  # 599 yield in env 2
-y3=Y[,3]  # 599 yield in env 3
-y=c(y2,y3) # yields in env 2 and 3 together (1198)
+y <- Y |> gather(key = "trait")
 
-X0=matrix(nrow=nrow(X),ncol=ncol(X),0) # a matrix full of zeros (599 x 1279)
+## make a zero matrix the same size of the marker data
+X0 = matrix(nrow=nrow(X),ncol=ncol(X),0) # a matrix full of zeros (599 x 1279)
 
-X_main=rbind(X,X) # (1198 x 1279) 2 copies of X  ?
-X_1=rbind(X,X0)   # (1198 x 1279) X + X0  ?
-X_2=rbind(X0,X)   # (1198 x 1279) X0 + X  ?
+## make "p" copies of X  <-- "p" phenotypes (same pheno in "p" envs, same sample IDs: this is why it is duplicated)
+X_main <- matrix(rep(t(X), ntraits), ncol=ncol(X),byrow=TRUE) 
+# X_main = rbind(X,X) # (1198 x 1279) 
 
-fm=BGLR( y=y,ETA=list(             
+for (i in 1:ntraits) {
+  
+  print(i)
+  temp = matrix(rep(t(X0), i), ncol=ncol(X0),byrow=TRUE)
+  assign(paste("X", i, sep = "_"), temp)
+}
+
+X_1 = rbind(X,X0)   # (1198 x 1279) X + X0
+X_2 = rbind(X0,X)   # (1198 x 1279) X0 + X  
+
+outpath = file.path(config$base_folder, config$outdir, "GxE_")
+fm = BGLR(y=y,ETA=list(             
   main=list(X=X_main,model='BRR'),
   int1=list(X=X_1,model='BRR'),
-  int2=list(X=X_2,model='BRR')
-),
-nIter=6000,burnIn=1000,saveAt='GxE_',groups=rep(1:2,each=nrow(X))
+  int2=list(X=X_2,model='BRR')),
+  nIter=config$nIter, burnIn=config$burnIn, saveAt=outpath, groups=rep(1:ntraits,each=nrow(X))
 )
 
 varU_main=scan('GxE_ETA_main_varB.dat')[-c(1:200)] #1000 ?
