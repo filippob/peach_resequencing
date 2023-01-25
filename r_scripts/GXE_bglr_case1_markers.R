@@ -23,6 +23,7 @@ if (length(args) == 1){
     nIter = 3000,
     burnIn = 500,
     outdir = 'Analysis/BGLR',
+    prefix = "GxE_",
     force_overwrite = FALSE
   ))
   
@@ -71,10 +72,10 @@ for (i in 1:ntraits) {
   assign(paste("X", i, sep = "_"), temp)
 }
 
-print("Writing out example data")
+print("Writing out results")
 dir.create(file.path(config$base_folder, config$outdir), recursive = TRUE, showWarnings = FALSE)
 
-outpath = file.path(config$base_folder, config$outdir, "GxE_")
+outpath = file.path(config$base_folder, config$outdir, config$prefix)
 fm = BGLR(y=y$value,ETA=list(             
   main=list(X=X_main,model='BRR'),
   int1=list(X=X_1,model='BRR'),
@@ -85,30 +86,7 @@ fm = BGLR(y=y$value,ETA=list(
   nIter=config$nIter, burnIn=config$burnIn, saveAt=outpath, groups=rep(1:ntraits,each=nrow(X))
 )
 
-## hic sunt leones
-varU_main=scan(file.path(config$base_folder, config$outdir,'GxE_ETA_main_varB.dat'))[-c(1:200)] #1000 ?
-varU_int1=scan(file.path(config$base_folder, config$outdir,'GxE_ETA_int1_varB.dat'))[-c(1:200)] #1000 ?
-varU_int2=scan(file.path(config$base_folder, config$outdir,'GxE_ETA_int2_varB.dat'))[-c(1:200)] #1000 ?
-varU_int3=scan(file.path(config$base_folder, config$outdir,'GxE_ETA_int3_varB.dat'))[-c(1:200)] #1000 ?
-varU_int4=scan(file.path(config$base_folder, config$outdir,'GxE_ETA_int4_varB.dat'))[-c(1:200)] #1000 ?
-
-varE=read.table(file.path(config$base_folder, config$outdir,'GxE_varE.dat'),header=FALSE)[-c(1:200),]  # 1000, from 201 to 1200 ?
-varU1=varU_main+varU_int1
-varU2=varU_main+varU_int2
-varU3=varU_main+varU_int3
-varU4=varU_main+varU_int4
-
-h2_1=varU1/(varU1+varE[,1])
-h2_2=varU2/(varU2+varE[,2])
-h2_3=varU3/(varU3+varE[,3])
-h2_4=varU4/(varU4+varE[,4])
-
-m <- cbind.data.frame(varU1, varU2, varU3, varU4)
-sqrt(m)
-COR=varU_main/sqrt(varU1*varU2*varU3*varU4)
-mean(h2_1)
-mean(h2_2)
-mean(COR)
+print("DONE!")
 
 
 
