@@ -22,6 +22,7 @@ if (length(args) == 1){
     X = 'data/markers.csv',
     nIter = 3000,
     burnIn = 500,
+    thin = 5, ## default value in BGLR is 5
     outdir = 'Analysis/BGLR',
     prefix = "GxE_",
     force_overwrite = FALSE
@@ -83,12 +84,11 @@ fm = BGLR(y=y$value,ETA=list(
   int3=list(X=X_3,model='BRR'),
   int4=list(X=X_4,model='BRR')
   ),
-  nIter=config$nIter, burnIn=config$burnIn, saveAt=outpath, groups=rep(1:ntraits,each=nrow(X))
+  nIter=config$nIter, burnIn=config$burnIn, thin = config$thin,
+  saveAt=outpath, groups=rep(1:ntraits,each=nrow(X))
 )
 
 print("DONE!")
-
-
 
 
 

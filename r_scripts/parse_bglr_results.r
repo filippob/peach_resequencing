@@ -16,6 +16,8 @@ if (length(args) == 1){
     outdir = 'Analysis/BGLR',
     prefix = "GxE_",
     ntraits = 4,
+    burnIn = 500,
+    thin = 5, ## default thin in BGLR is 5
     force_overwrite = FALSE
   ))
   
@@ -24,7 +26,8 @@ if (length(args) == 1){
 #### READ FILES
 writeLines(" - reading results files")
 
-varU_main = scan(file.path(config$base_folder, config$outdir, paste(config$prefix, 'ETA_main_varB.dat', sep="")))[-c(1:200)] #1000 ?
+varU_main = scan(file.path(config$base_folder, config$outdir, paste(config$prefix, 'ETA_main_varB.dat', sep="")))
+varU_main = varU_main[-c(1:(config$burnIn/config$thin))]
 
 for (i in 1:config$ntraits) {
   
