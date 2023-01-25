@@ -14,4 +14,4 @@ Bash scripts to use `bcftools` and `vcftools` to subset the vcf file from varian
 
 ## GxE interactions
 
-1. approaches with BGLR from https://github.com/gdlc/BGLR-R/blob/master/inst/md/GxE_usingInteractions.md
+1. approaches with BGLR from https://github.com/gdlc/BGLR-R/blob/master/inst/md/GxE_usingInteractions.md (paper: https://pubmed.ncbi.nlm.nih.gov/25660166/)
