@@ -19,6 +19,7 @@ bcftools_img='/home/core/nxf_singularity_cache/depot.galaxyproject.org-singulari
 vcftools_img='/home/core/nxf_singularity_cache/depot.galaxyproject.org-singularity-vcftools0.1.16.img'
 
 ### parameters
+suffix="extracted"
 
 echo "-----------------------"
 echo "FILTERING SNP VCF FILES"
@@ -40,7 +41,7 @@ singularity run -B /home/freeclimb/:/home/freeclimb/ ${bcftools_img} bcftools st
 echo "analysing data from ${input_file}"
 temp="$(basename "${input_file}")"
 fname=${temp/.vcf.gz/""}
-outfile="$homefolder/$outdir/${fname}_filtered"
+outfile="$homefolder/$outdir/${fname}_${suffix}"
 echo "will be writing out to file $outfile"
 
 if [ -f "$outfile" ]; then
@@ -68,6 +69,6 @@ echo "n. of output variants from $outfile is $nvars"
 
 ## stat report from bcftools
 echo " - calculating stats on filtered file ... "
-singularity run -B /home/freeclimb/:/home/freeclimb/ ${bcftools_img} bcftools stats $outfile.vcf.gz > ${outdir}/bcftools.filtered.stats
+singularity run -B /home/freeclimb/:/home/freeclimb/ ${bcftools_img} bcftools stats $outfile.vcf.gz > ${outdir}/bcftools.${suffix}.stats
 
 echo "DONE!!"
