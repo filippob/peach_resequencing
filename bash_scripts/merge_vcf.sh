@@ -7,10 +7,12 @@ set -euxo pipefail
 ### files and folders
 #input_file=$1 ## e.g. Analysis/IGA/results/snps_only.vcf.gz
 homefolder="/home/freeclimb"
-f1="$homefolder/Analysis/IGA/filtered/snps_only_filtered.vcf.gz"
-f2="$homefolder/Analysis/BGI/filtered/snps_only_filtered.vcf.gz"
-f3="$homefolder/Analysis/Reseq/filtered/snps_only_filtered.vcf.gz"
-f4="$homefolder/Analysis/NCBI/filtered/snps_only_filtered.vcf.gz"
+subfolder="extracted_vcf"
+suffix="extracted"
+f1="$homefolder/Analysis/IGA/${subfolder}/snps_only_${suffix}.vcf.gz"
+f2="$homefolder/Analysis/BGI/${subfolder}/snps_only_${suffix}.vcf.gz"
+f3="$homefolder/Analysis/Reseq/${subfolder}/snps_only_${suffix}.vcf.gz"
+f4="$homefolder/Analysis/NCBI/${subfolder}/snps_only_${suffix}.vcf.gz"
 #dir="$(dirname "${input_file}")"
 outdir="Analysis/merged_vcf"
 
@@ -19,7 +21,7 @@ bcftools_img='/home/core/nxf_singularity_cache/depot.galaxyproject.org-singulari
 vcftools_img='/home/core/nxf_singularity_cache/depot.galaxyproject.org-singularity-vcftools0.1.16.img'
 
 ### parameters
-
+label="60k_extracted"
 
 echo "-----------------------"
 echo "MERGING VCF FILES"
@@ -36,7 +38,7 @@ fi
 
 
 echo "bcftools merge"
-outfile="$homefolder/$outdir/merged.vcf"
+outfile="$homefolder/$outdir/merged_${label}.vcf"
 echo "will be writing out to file $outfile"
 
 if [ -f "$outfile" ]; then
@@ -45,7 +47,7 @@ if [ -f "$outfile" ]; then
 
 else
 	echo " - merging multiple  input vcf files"
-	singularity run -B /home/freeclimb/:/home/freeclimb/ ${bcftools_img} bcftools merge -m none $f1 $f2 -O v -o ${outfile}
+	singularity run -B /home/freeclimb/:/home/freeclimb/ ${bcftools_img} bcftools merge -m none $f1 $f2 $f3 $f4 -O v -o ${outfile}
 	#singularity run -B /home/freeclimb/:/home/freeclimb/ ${bcftools_img} bcftools view -e 'QUAL <= 1 || INFO/DP > 35 || INFO/DP < 0.2' -c $mac -q $maf ${input_file} | bgzip > $outfile
 	echo "compressing vcf file wth bgzip"
 	singularity run -B /home/freeclimb/:/home/freeclimb/ ${bcftools_img} bgzip -c $outfile > $outfile.gz
