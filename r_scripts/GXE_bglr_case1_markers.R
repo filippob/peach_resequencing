@@ -51,9 +51,9 @@ print("raw correlations between phenotypes")
 print(kable(round(cor(Y),2))) # correlation between yields in the 4 environments (round with 2 decimals)
 
 writeLines(" - scaling marker data")
-X = scale(X)/sqrt(ncol(X))   # scaled genotypes (599 samples x 1279 markers) ## why /sqrt(ncols) ??
+X = scale(X, center = TRUE, scale = FALSE)/sqrt(ncol(X))   # scaled genotypes (599 samples x 1279 markers) ## why /sqrt(ncols) ??
 
-
+writeLines(" - preparing long vector of phenotypes")
 y <- Y |> gather(key = "trait")
 
 ## make a zero matrix the same size of the marker data
@@ -92,8 +92,4 @@ fname = paste(config$prefix, "BRR_res.RData", sep="")
 save(fm, file = file.path(config$base_folder, config$outdir, fname))
 
 print("DONE!")
-
-
-
-
 
