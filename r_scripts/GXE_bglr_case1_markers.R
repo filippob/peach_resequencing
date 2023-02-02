@@ -23,8 +23,8 @@ if (length(args) == 1){
     nIter = 3000,
     burnIn = 500,
     thin = 5, ## default value in BGLR is 5
-    outdir = 'Analysis/BGLR',
-    prefix = "GxE_",
+    outdir = 'Analysis/BGLR/marker_regression',
+    prefix = "GxE_mrk_reg_",
     force_overwrite = FALSE
   ))
   
@@ -87,6 +87,9 @@ fm = BGLR(y=y$value,ETA=list(
   nIter=config$nIter, burnIn=config$burnIn, thin = config$thin,
   saveAt=outpath, groups=rep(1:ntraits,each=nrow(X))
 )
+
+fname = paste(config$prefix, "BRR_res.RData", sep="")
+save(fm, file = file.path(config$base_folder, config$outdir, fname))
 
 print("DONE!")
 
