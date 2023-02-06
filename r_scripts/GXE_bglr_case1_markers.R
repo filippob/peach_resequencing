@@ -73,7 +73,8 @@ for (i in 1:ntraits) {
   assign(paste("X", i, sep = "_"), temp)
 }
 
-print("Writing out results")
+################################################
+print("Running the BGLR model - marker matrix")
 dir.create(file.path(config$base_folder, config$outdir), recursive = TRUE, showWarnings = FALSE)
 
 outpath = file.path(config$base_folder, config$outdir, config$prefix)
@@ -88,6 +89,7 @@ fm = BGLR(y=y$value,ETA=list(
   saveAt=outpath, groups=rep(1:ntraits,each=nrow(X))
 )
 
+print("Writing out results")
 fname = paste(config$prefix, "BRR_res.RData", sep="")
 save(fm, file = file.path(config$base_folder, config$outdir, fname))
 
