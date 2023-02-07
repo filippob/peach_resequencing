@@ -19,12 +19,12 @@ if (length(args) == 1){
   #as follows
   config = NULL
   config = rbind(config, data.frame(
-    base_folder = '~/Documents/freeclimb/g_x_e',
-    y = 'data/peach_prova/phenotypes.csv',
-    X = 'data/peach_prova/markers.csv',
+    base_folder = '/home/freeclimb/GxE',
+    y = 'data/phenotypes.csv',
+    X = 'data/markers.csv',
     evd_threshold = 1e-3,
-    nIter = 3000,
-    burnIn = 500,
+    nIter = 2000,
+    burnIn = 100,
     thin = 5, ## default value in BGLR is 5
     outdir = 'Analysis/BGLR/kinship',
     prefix = "GxE_kin_",
@@ -108,6 +108,8 @@ LP = list(main=list(X=X0,model='BRR'),
 )
 ###############################
 
+print("Running the BGLR model - kinship matrix")
+dir.create(file.path(config$base_folder, config$outdir), recursive = TRUE, showWarnings = FALSE)
 outpath = file.path(config$base_folder, config$outdir, config$prefix)
 fmGRM = BGLR(y=y$value,ETA=LP,
              nIter=config$nIter, burnIn=config$burnIn, thin = config$thin,
