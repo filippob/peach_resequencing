@@ -19,15 +19,17 @@ if (length(args) == 1){
   #as follows
   config = NULL
   config = rbind(config, data.frame(
-    base_folder = '/home/freeclimb/GxE',
-    y = 'data/phenotypes.csv',
-    X = 'data/markers.csv',
+    base_folder = '~/Documents/freeclimb/g_x_e',
+    y = 'data/MD_2020/phenotypes.csv',
+    X = 'data/MD_2020/markers.csv',
+    trait = 'MD',
+    year = 2020,
     evd_threshold = 1e-3,
     nIter = 2000,
     burnIn = 100,
     thin = 5, ## default value in BGLR is 5
-    outdir = 'Analysis/BGLR/kinship',
-    prefix = "GxE_kin_",
+    outdir = 'Analysis/BGLR',
+    prefix = "GxE_kinship_incomplete",
     subsample = 1000, ## n. of SNPs to subsample randomly
     force_overwrite = FALSE
   ))
@@ -90,34 +92,63 @@ for (i in 1:ntraits) {
   assign(paste("X", i, sep = ""), X0)
 }
 
-###############################
-## !! MANUAL EDITING HERE !! ##
-###############################
-for(i in 1:nrow(X0)){
-  X1[i,]<-(env[i]==1)*X0[i,]
-  X2[i,]<-(env[i]==2)*X0[i,]	
-  X3[i,]<-(env[i]==3)*X0[i,]
-  X4[i,]<-(env[i]==4)*X0[i,]
+#############################################
+## !! MANUAL EDITING HERE IF NTRAITS > 4!! ##
+#############################################
+if (ntraits == 2) {
+  
+  for(i in 1:nrow(X0)){
+    X1[i,]<-(env[i]==1)*X0[i,]
+    X2[i,]<-(env[i]==2)*X0[i,]	
+  }
+  
+  LP = list(main=list(X=X0,model='BRR'), 
+            int1=list(X=X1,model='BRR'),
+            int2=list(X=X2,model='BRR')
+  )
+} else if (ntraits == 3) {
+  
+  for(i in 1:nrow(X0)){
+    X1[i,]<-(env[i]==1)*X0[i,]
+    X2[i,]<-(env[i]==2)*X0[i,]	
+    X3[i,]<-(env[i]==3)*X0[i,]
+  }
+  
+  LP = list(main=list(X=X0,model='BRR'), 
+            int1=list(X=X1,model='BRR'),
+            int2=list(X=X2,model='BRR'),
+            int3=list(X=X3,model='BRR')
+  )
+} else if (ntraits == 4) {
+  
+  for(i in 1:nrow(X0)){
+    X1[i,]<-(env[i]==1)*X0[i,]
+    X2[i,]<-(env[i]==2)*X0[i,]	
+    X3[i,]<-(env[i]==3)*X0[i,]
+    X4[i,]<-(env[i]==4)*X0[i,]
+  }
+  
+  LP = list(main=list(X=X0,model='BRR'), 
+            int1=list(X=X1,model='BRR'),
+            int2=list(X=X2,model='BRR'),
+            int3=list(X=X3,model='BRR'),
+            int4=list(X=X4,model='BRR')
+  )
 }
-
-LP = list(main=list(X=X0,model='BRR'), 
-          int1=list(X=X1,model='BRR'),
-          int2=list(X=X2,model='BRR'),
-          int3=list(X=X3,model='BRR'),
-          int4=list(X=X4,model='BRR')
-)
 ###############################
 
 print("Running the BGLR model - kinship matrix")
-dir.create(file.path(config$base_folder, config$outdir), recursive = TRUE, showWarnings = FALSE)
-outpath = file.path(config$base_folder, config$outdir, config$prefix)
+experiment = paste(config$trait, config$year, sep="_")
+dirname = file.path(config$base_folder,config$outdir,experiment)
+dir.create(dirname, recursive = TRUE, showWarnings = FALSE)
+outpath = file.path(dirname, config$prefix)
 fmGRM = BGLR(y=y$value,ETA=LP,
              nIter=config$nIter, burnIn=config$burnIn, thin = config$thin,
              saveAt=outpath, groups=env)
 
 print("Writing out results")
 fname = paste(config$prefix, "BRR_res.RData", sep="")
-save(fmGRM, file = file.path(config$base_folder, config$outdir, fname))
+save(fmGRM, file = file.path(dirname, fname))
 
 print("DONE!")
 
