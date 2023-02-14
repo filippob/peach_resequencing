@@ -12,9 +12,10 @@ if (length(args) == 1){
   #as follows
   config = NULL
   config = rbind(config, data.frame(
-    base_folder = '/home/freeclimb',
-    phenotypes = 'GxE/merge_ID_phen_corrected/merged_ID_phen_corrected_edited.csv',
-    genotypes = 'Analysis/merged_vcf/extract_imputed.raw',
+    base_folder = '~/Documents/freeclimb',
+    # phenotypes = 'GxE/merge_ID_phen_corrected/merged_ID_phen_corrected_edited.csv',
+    phenotypes = 'g_x_e/data/merged_ID_phen_corrected_edited.csv',
+    genotypes = 'VariantCalling/Analysis/merged_vcf/extract_imputed.raw',
     trait = "BD",
     year = 2018,
     outdir = 'GxE/data',
@@ -41,6 +42,10 @@ pheno = pheno |> filter(year == config$year) |> select(all_of(vec))
 pheno = filter(pheno, !is.na(.data[[config$trait]]))
 
 print(paste("From the phenotype file", fname, " ", nrow(pheno), "non-missing records have been read for", config$trait, "in year", config$year))
+
+locations = unique(pheno$loc)
+print(paste("Phenotypic data from the following locations:", paste(locations, collapse = ",")))
+stopifnot(length(locations) > 1)
 
 writeLines(" - reading the genotypic data")
 fname = file.path(config$base_folder, config$genotypes)
