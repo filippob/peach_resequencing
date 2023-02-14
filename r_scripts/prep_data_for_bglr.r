@@ -12,13 +12,13 @@ if (length(args) == 1){
   #as follows
   config = NULL
   config = rbind(config, data.frame(
-    base_folder = '~/Documents/freeclimb',
-    phenotypes = 'g_x_e/data/merged_ID_phen_corrected_edited.csv',
-    genotypes = 'VariantCalling/Analysis/merged_vcf/extract_imputed.raw',
-    trait = "MD",
-    year = 2020,
-    outdir = 'g_x_e/data',
-    prefix = "MD_2020",
+    base_folder = '/home/freeclimb',
+    phenotypes = 'GxE/merge_ID_phen_corrected/merged_ID_phen_corrected_edited.csv',
+    genotypes = 'Analysis/merged_vcf/extract_imputed.raw',
+    trait = "BD",
+    year = 2018,
+    outdir = 'GxE/data',
+    prefix = "BD_2018",
     force_overwrite = FALSE
   ))
   
@@ -50,7 +50,9 @@ geno <- rename(geno, sample=V2)
 # PREPROCESSING -------------------------------------------------------------------
 writeLines(" - preprocessing")
 print("select columns and check for duplicate IDs")
-pheno <- pheno |> select(sample,loc,MD)
+vec = c("sample","loc",config$trait)
+pheno <- pheno |> select(all_of(vec))
+names(pheno) = c("sample","loc","trait")
 duplicates = group_by(pheno, sample) |> summarise(N = n()) |> filter(N>4) |> pull(sample)
 
 print(paste("N. of duplicate IDs removed", length(duplicates)))
@@ -64,7 +66,7 @@ geno = filter(geno, sample %in% samples)
 print(paste("N. of samples matched between phenotypes and genotypes", sum(vv)))
 
 ## reshape phenotypic data and reorder to have same order as genotype data
-pheno = pheno |> spread(key = loc, value = MD)
+pheno = pheno |> spread(key = loc, value = trait)
 idx <- match(geno$sample, pheno$sample)
 pheno <- pheno[idx,]
 
@@ -77,7 +79,8 @@ writeLines(" - removing columns (locations) with missing rate > 50% - if any-.")
 print(paste("removing the following location(s):",names(which(miss_rate>0.5))))
 vec = miss_rate < 0.5
 vec = c(TRUE,as.vector(vec))
-pheno = pheno[,vec,with=FALSE]
+pheno = as.data.frame(pheno)
+pheno = pheno[,vec]
 
 print(head(pheno))
 
