@@ -16,10 +16,10 @@ if (length(args) == 1){
     # phenotypes = 'GxE/merge_ID_phen_corrected/merged_ID_phen_corrected_edited.csv',
     phenotypes = 'g_x_e/data/merged_ID_phen_corrected_edited.csv',
     genotypes = 'VariantCalling/Analysis/merged_vcf/extract_imputed.raw',
-    trait = "BD",
+    trait = "MD",
     year = 2018,
     outdir = 'GxE/data',
-    prefix = "BD_2018",
+    prefix = "MD_2018",
     force_overwrite = FALSE
   ))
   
@@ -45,7 +45,8 @@ print(paste("From the phenotype file", fname, " ", nrow(pheno), "non-missing rec
 
 locations = unique(pheno$loc)
 print(paste("Phenotypic data from the following locations:", paste(locations, collapse = ",")))
-stopifnot(length(locations) > 1)
+n_locations = length(locations)
+stopifnot(n_locations > 1)
 
 writeLines(" - reading the genotypic data")
 fname = file.path(config$base_folder, config$genotypes)
@@ -58,7 +59,7 @@ print("select columns and check for duplicate IDs")
 vec = c("sample","loc",config$trait)
 pheno <- pheno |> select(all_of(vec))
 names(pheno) = c("sample","loc","trait")
-duplicates = group_by(pheno, sample) |> summarise(N = n()) |> filter(N>4) |> pull(sample)
+duplicates = group_by(pheno, sample) |> summarise(N = n()) |> filter(N>n_locations) |> pull(sample)
 
 print(paste("N. of duplicate IDs removed", length(duplicates)))
 pheno <- filter(pheno, !sample %in% duplicates)
