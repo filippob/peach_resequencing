@@ -20,10 +20,11 @@ if (length(args) == 1){
   config = NULL
   config = rbind(config, data.frame(
     base_folder = '~/Documents/freeclimb/g_x_e',
-    y = 'data/MD_2020/phenotypes.csv',
-    X = 'data/MD_2020/markers.csv',
+    y = 'data/MD_2019/phenotypes.csv',
+    X = 'data/MD_2019/markers.csv',
+    test_prop = 0.2,
     trait = 'MD',
-    year = 2020,
+    year = 2019,
     evd_threshold = 1e-3,
     nIter = 2000,
     burnIn = 100,
@@ -70,6 +71,13 @@ for (i in 1:length(v)) {
   print(i)
   env = c(env, rep(i,v[i]))
 }
+
+#2# Creating a Testing set
+n = nrow(y)
+test_size = n*(config$test_prop)
+yNA <- y
+tst <- sample(1:n, size=test_size, replace=FALSE)
+yNA[tst, "value"] <- NA
 
 ### KINSHIP MATRIX
 writeLines(" - calculating matrix of genetic kinship")
@@ -142,13 +150,14 @@ experiment = paste(config$trait, config$year, sep="_")
 dirname = file.path(config$base_folder,config$outdir,experiment)
 dir.create(dirname, recursive = TRUE, showWarnings = FALSE)
 outpath = file.path(dirname, config$prefix)
-fmGRM = BGLR(y=y$value,ETA=LP,
+fmGRM = BGLR(y=yNA$value,ETA=LP,
              nIter=config$nIter, burnIn=config$burnIn, thin = config$thin,
              saveAt=outpath, groups=env)
 
 print("Writing out results")
 fname = paste(config$prefix, "BRR_res.RData", sep="")
-save(fmGRM, file = file.path(dirname, fname))
+to_save = list("fmGRM"=fmGRM, "y"=y, "test_rows" = tst)
+save(to_save, file = file.path(dirname, fname))
 
 print("DONE!")
 
