@@ -18,13 +18,16 @@ if (length(args) == 1){
   config = NULL
   config = rbind(config, data.frame(
     base_folder = '~/Documents/freeclimb/g_x_e',
-    y = 'data/phenotypes.csv',
-    X = 'data/markers.csv',
-    nIter = 3000,
-    burnIn = 500,
+    y = 'data/MD_2019/phenotypes.csv',
+    X = 'data/MD_2019/markers.csv',
+    trait = 'MD',
+    year = 2019,
+    nIter = 2000,
+    burnIn = 200,
     thin = 5, ## default value in BGLR is 5
     outdir = 'Analysis/BGLR/marker_regression',
     prefix = "GxE_mrk_reg_",
+    subsample = 1000, ## n. of SNPs to subsample randomly
     force_overwrite = FALSE
   ))
   
@@ -44,11 +47,16 @@ Y = fread(fname, header = TRUE) # grain yield evaluated in 4 different environme
 ## markers
 fname = file.path(config$base_folder, config$X) 
 X = fread(fname, header = TRUE) ## 599 samples, 1279 markers (DArT markers --> 0/1)
+X <- as.data.frame(X)
+vec <- sample(1:ncol(X), config$subsample)
+X <- X[,vec]
+row.names(Y) <- paste("s",1:nrow(Y),sep="")
+row.names(X) <- paste("s",1:nrow(Y),sep="")
 
 ntraits = ncol(Y) 
 
 print("raw correlations between phenotypes")
-print(kable(round(cor(Y),2))) # correlation between yields in the 4 environments (round with 2 decimals)
+print(kable(round(cor(Y, use = "complete.obs"),2))) # correlation between yields in the 4 environments (round with 2 decimals)
 
 writeLines(" - scaling marker data")
 X = scale(X, center = TRUE, scale = FALSE)/sqrt(ncol(X))   # scaled genotypes (599 samples x 1279 markers) ## why /sqrt(ncols) ??
@@ -77,14 +85,37 @@ for (i in 1:ntraits) {
 print("Running the BGLR model - marker matrix")
 dir.create(file.path(config$base_folder, config$outdir), recursive = TRUE, showWarnings = FALSE)
 
+
+#############################################
+## !! MANUAL EDITING HERE IF NTRAITS > 4!! ##
+#############################################
+if (ntraits == 2) {
+  
+  LP = list(main=list(X=X_main,model='BRR'), 
+            int1=list(X=X_1,model='BRR'),
+            int2=list(X=X_2,model='BRR')
+  )
+} else if (ntraits == 3) {
+  
+  LP = list(main=list(X=X_main,model='BRR'), 
+            int1=list(X=X_1,model='BRR'),
+            int2=list(X=X_2,model='BRR'),
+            int3=list(X=X_3,model='BRR')
+  )
+} else if (ntraits == 4) {
+  
+  LP = list(main=list(X=X_main,model='BRR'), 
+            int1=list(X=X_1,model='BRR'),
+            int2=list(X=X_2,model='BRR'),
+            int3=list(X=X_3,model='BRR'),
+            int4=list(X=X_4,model='BRR')
+  )
+}
+###############################
+
+
 outpath = file.path(config$base_folder, config$outdir, config$prefix)
-fm = BGLR(y=y$value,ETA=list(             
-  main=list(X=X_main,model='BRR'),
-  int1=list(X=X_1,model='BRR'),
-  int2=list(X=X_2,model='BRR'),
-  int3=list(X=X_3,model='BRR'),
-  int4=list(X=X_4,model='BRR')
-  ),
+fm = BGLR(y=y$value,ETA=LP,
   nIter=config$nIter, burnIn=config$burnIn, thin = config$thin,
   saveAt=outpath, groups=rep(1:ntraits,each=nrow(X))
 )
@@ -95,3 +126,7 @@ save(fm, file = file.path(config$base_folder, config$outdir, fname))
 
 print("DONE!")
 
+## stub of code to plot marker effects (not p-values)
+# bHat = fm$ETA[[1]]$b ## the index [[1]] refers to the common genetic effect from the model
+# plot(bHat^2, ylab='Estimated Squared-Marker Effect',
+#      type='o',cex=.5,col=4,main='Marker Effects')
