@@ -115,13 +115,5 @@ fwrite(x = res, file = fname, sep=",")
 
 print("DONE!!")
 
-CORg_1_2=varU_main/sqrt(varU1*varU2)
-CORg_1_3=varU_main/sqrt(varU1*varU3)
-CORg_1_4=varU_main/sqrt(varU1*varU4)
-CORg_2_3=varU_main/sqrt(varU2*varU3)
-CORg_2_4=varU_main/sqrt(varU2*varU4)
-CORg_3_4=varU_main/sqrt(varU3*varU4)
-CORg=varU_main/sqrt(varU1*varU2*varU3*varU4)
-
 
 
