@@ -31,7 +31,9 @@ library("data.table")
 
 traits = strsplit(config$traits, ",")[[1]]
 
-res = data.frame("trait"=NULL, "test_corr"=NULL, "train_corr"=NULL, "h2_1"=NULL, "h2_2"=NULL, "h2_3"=NULL, "h2_4"=NULL,
+res = data.frame("trait"=NULL, "test_corr"=NULL, "train_corr"=NULL, 
+                 "test_rmse" = NULL, "train_rmse" = NULL,
+                 "h2_1"=NULL, "h2_2"=NULL, "h2_3"=NULL, "h2_4"=NULL,
                  "rg1_2"=NULL, "rg1_3"=NULL, "rg1_4"=NULL, "rg2_3"=NULL,"rg2_4"=NULL, "rg3_4"=NULL)
 for (trt in traits) {
   
@@ -50,6 +52,9 @@ for (trt in traits) {
   #5# Assesment of correlation in TRN and TST data sets
   test_corr = cor(fmGRM$yHat[tst],y$value[tst])
   train_corr = cor(fmGRM$yHat[-tst],y$value[-tst]) #TRN
+  
+  test_rmse = sqrt(sum((fmGRM$yHat[tst]-y$value[tst])^2)/length(tst))
+  train_rmse = sqrt(sum((fmGRM$yHat[-tst]-y$value[-tst])^2)/length(y$value[-tst]))
   
   ## residual variance
   filenames = list.files(fpath, pattern="*varE.dat", full.names=TRUE)
@@ -93,6 +98,7 @@ for (trt in traits) {
   }
   
   temp = data.frame("trait"=trt, "test_corr"=test_corr, "train_corr"=train_corr,
+                    "test_rmse"=test_rmse, "train_rmse"=train_rmse,
                     "h2_1" = ifelse(exists("h2_1"),mean(h2_1),NA),
                     "h2_2" = ifelse(exists("h2_2"),mean(h2_2),NA),
                     "h2_3" = ifelse(exists("h2_3"),mean(h2_3),NA),
