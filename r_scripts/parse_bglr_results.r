@@ -82,8 +82,10 @@ for (trt in traits) {
   }
   
   ## pairwise combinations
-  lcomb = split(combn(length(filenames),2), rep(1:ncol(m), each = nrow(m)))
+  m = combn(length(filenames),2)
+  lcomb = split(m, rep(1:ncol(m), each = nrow(m)))
   
+  ## GENETIC CORRELATIONS
   for (i in 1:length(lcomb)) {
     
     tmp = varU_main/sqrt(get(paste("varU",lcomb[[i]][1],sep="")) * get(paste("varU",lcomb[[i]][2],sep="")))
@@ -104,9 +106,10 @@ for (trt in traits) {
                     )
   res = rbind.data.frame(res,temp)
   
-  rm(y,fmGRM,tst)
+  rm(y,fmGRM,tst,m)
   rm(list=ls(pattern="var"))
   rm(list=ls(pattern="h2"))
+  rm(list=ls(pattern="rg"))
 }
 
 dir.create(file.path(config$base_folder, config$outdir), showWarnings = FALSE)
