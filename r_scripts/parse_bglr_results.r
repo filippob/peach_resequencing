@@ -31,7 +31,7 @@ library("data.table")
 
 traits = strsplit(config$traits, ",")[[1]]
 
-res = data.frame("trait"=NULL, "test_corr"=NULL, "train_corr"=NULL)
+res = data.frame("trait"=NULL, "test_corr"=NULL, "train_corr"=NULL, "h2_1"=NULL, "h2_2"=NULL, "h2_3"=NULL, "h2_4"=NULL)
 for (trt in traits) {
   
   trt = str_trim(trt, side = "both")
@@ -53,11 +53,13 @@ for (trt in traits) {
   filenames = list.files(fpath, pattern="*varE.dat", full.names=TRUE)
   fname = filenames[grepl(pattern = config$prefix, filenames)][1]
   varE = fread(fname)
+  varE = as.data.frame(varE[-c(1:(config$burnIn/config$thin)), ])
   
   ## main genetic variance
   filenames = list.files(fpath, pattern="*main_varB.dat", full.names=TRUE)
   fname = filenames[grepl(pattern = config$prefix, filenames)][1]
   varU_main = fread(fname)
+  varU_main = varU_main$V1[-c(1:(config$burnIn/config$thin))]
   
   ## GxE variances
   filenames = list.files(fpath, pattern="*int[0-9]_varB.dat", full.names=TRUE)
@@ -65,11 +67,19 @@ for (trt in traits) {
   for (i in 1:length(filenames)) {
     
     fname = paste(config$prefix, 'ETA_int', i, '_varB.dat', sep="")
-    temp = scan(file.path(config$base_folder, config$outdir, fname))
+    temp = scan(file.path(config$base_folder, config$outdir, fname))[-c(1:(config$burnIn/config$thin))]
     assign(paste("varU_int", i, sep = ""), temp)
+    assign(paste("varU", i, sep=""), get(paste("varU_int", i, sep = "")) + varU_main)
+    assign(paste("h2", i, sep="_"), get(paste("varU", i, sep=""))/(get(paste("varU", i, sep=""))+varE[,i]))
   }
   
-  temp = data.frame("trait"=trt, "test_corr"=test_corr, "train_corr"=train_corr)
+  ifelse(exists("h2_4"),mean(h2_4),NA)
+  temp = data.frame("trait"=trt, "test_corr"=test_corr, "train_corr"=train_corr,
+                    "h2_1" = ifelse(exists("h2_1"),mean(h2_1),NA),
+                    "h2_2" = ifelse(exists("h2_2"),mean(h2_2),NA),
+                    "h2_3" = ifelse(exists("h2_3"),mean(h2_3),NA),
+                    "h2_4" = ifelse(exists("h2_4"),mean(h2_4),NA)
+                    )
   res = rbind.data.frame(res,temp)
   
   rm(y,fmGRM,tst)
@@ -80,4 +90,5 @@ fname = file.path(config$base_folder, config$outdir, "results.csv")
 fwrite(x = res, file = fname, sep=",")
 
 print("DONE!!")
+
 
