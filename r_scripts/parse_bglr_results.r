@@ -1,4 +1,3 @@
-
 # INPUT CONFIGURATION MANAGEMENT ------------------------------------------
 args = commandArgs(trailingOnly=TRUE)
 if (length(args) == 1){
@@ -13,46 +12,47 @@ if (length(args) == 1){
   config = NULL
   config = rbind(config, data.frame(
     base_folder = '~/Documents/freeclimb/g_x_e',
-    outdir = 'Analysis/BGLR',
-    prefix = "GxE_",
-    ntraits = 4,
-    burnIn = 500,
+    X = 'data/MD_2019/markers.csv',
+    result_folder = 'Analysis/BGLR',
+    outdir = 'Analysis/BGLR/MD_2019',
+    traits = 'MD_2019,MD_2020',
+    prefix = "GxE_kinship_incomplete",
+    ntraits = 3,
+    burnIn = 100,
     thin = 5, ## default thin in BGLR is 5
     force_overwrite = FALSE
   ))
   
 }
 
-#### READ FILES
-writeLines(" - reading results files")
+library("stringr")
+library("data.table")
 
-varU_main = scan(file.path(config$base_folder, config$outdir, paste(config$prefix, 'ETA_main_varB.dat', sep="")))
-varU_main = varU_main[-c(1:(config$burnIn/config$thin))]
+traits = strsplit(config$traits, ",")[[1]]
 
-for (i in 1:config$ntraits) {
+res = data.frame("trait"=NULL, "test_corr"=NULL, "train_corr"=NULL)
+for (trt in traits) {
   
-  fname = paste(config$prefix, 'ETA_int', i, '_varB.dat', sep="")
-  temp = scan(file.path(config$base_folder, config$outdir, fname))
-  assign(paste("varU_int", i, sep = ""), temp)
+  trt = str_trim(trt, side = "both")
+  fpath = file.path(config$base_folder, config$result_folder, trt)
+  filenames = list.files(fpath, pattern="*.RData", full.names=TRUE)
+  fname = filenames[grepl(pattern = config$prefix, filenames)][1]
+  print(paste("Loading data from",fname))
+  load(fname)
+  
+  y <- to_save$y
+  fmGRM <- to_save$fmGRM
+  tst = to_save$test_rows
+  
+  #5# Assesment of correlation in TRN and TST data sets
+  test_corr = cor(fmGRM$yHat[tst],y$value[tst])
+  train_corr = cor(fmGRM$yHat[-tst],y$value[-tst]) #TRN
+  
+  temp = data.frame("trait"=trt, "test_corr"=test_corr, "train_corr"=train_corr)
+  res = rbind.data.frame(res,temp)
+  
+  rm(y,fmGRM,tst)
 }
 
-varE = read.table(file.path(config$base_folder, config$outdir,paste(config$prefix, 'varE.dat', sep="")),header=FALSE)[-c(1:200),]  # 1000, from 201 to 1200 ?
+print("DONE!!")
 
-## PROCESS FILES
-## hic sunt leones
-varU1=varU_main+varU_int1
-varU2=varU_main+varU_int2
-varU3=varU_main+varU_int3
-varU4=varU_main+varU_int4
-
-h2_1=varU1/(varU1+varE[,1])
-h2_2=varU2/(varU2+varE[,2])
-h2_3=varU3/(varU3+varE[,3])
-h2_4=varU4/(varU4+varE[,4])
-
-m <- cbind.data.frame(varU1, varU2, varU3, varU4)
-# sqrt(m)
-COR=varU_main/sqrt(varU1*varU2*varU3*varU4)
-mean(h2_1)
-mean(h2_2)
-mean(COR)
