@@ -11,11 +11,12 @@ if (length(args) == 1){
   #as follows
   config = NULL
   config = rbind(config, data.frame(
-    base_folder = '~/Documents/freeclimb/g_x_e',
+    #base_folder = '~/Documents/freeclimb/g_x_e',
+    base_folder = '/home/freeclimb/GxE',
     X = 'data/MD_2019/markers.csv',
     result_folder = 'Analysis/BGLR',
-    outdir = 'Analysis/BGLR/MD_2019',
-    traits = 'MD_2019,MD_2020',
+    outdir = 'Analysis/BGLR/results',
+    traits = 'BD_2019,BD_2020,BD_2021,BD_2022,FDP_2019,FDP_2020,FDP_2021,FDP_2022,MD_2018,MD_2019,MD_2020,MD_2021,MD_2022',
     prefix = "GxE_kinship_incomplete",
     ntraits = 3,
     burnIn = 100,
@@ -53,6 +54,10 @@ for (trt in traits) {
   
   rm(y,fmGRM,tst)
 }
+
+dir.create(file.path(config$base_folder, config$outdir), showWarnings = FALSE)
+fname = file.path(config$base_folder, config$outdir, "results.csv")
+fwrite(x = res, file = fname, sep=",")
 
 print("DONE!!")
 
