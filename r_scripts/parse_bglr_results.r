@@ -11,8 +11,8 @@ if (length(args) == 1){
   #as follows
   config = NULL
   config = rbind(config, data.frame(
-    #base_folder = '~/Documents/freeclimb/g_x_e',
-    base_folder = '/home/freeclimb/GxE',
+    base_folder = '~/Documents/freeclimb/g_x_e',
+    # base_folder = '/home/freeclimb/GxE',
     X = 'data/MD_2019/markers.csv',
     result_folder = 'Analysis/BGLR',
     outdir = 'Analysis/BGLR/results',
@@ -48,6 +48,26 @@ for (trt in traits) {
   #5# Assesment of correlation in TRN and TST data sets
   test_corr = cor(fmGRM$yHat[tst],y$value[tst])
   train_corr = cor(fmGRM$yHat[-tst],y$value[-tst]) #TRN
+  
+  ## residual variance
+  filenames = list.files(fpath, pattern="*varE.dat", full.names=TRUE)
+  fname = filenames[grepl(pattern = config$prefix, filenames)][1]
+  varE = fread(fname)
+  
+  ## main genetic variance
+  filenames = list.files(fpath, pattern="*main_varB.dat", full.names=TRUE)
+  fname = filenames[grepl(pattern = config$prefix, filenames)][1]
+  varU_main = fread(fname)
+  
+  ## GxE variances
+  filenames = list.files(fpath, pattern="*int[0-9]_varB.dat", full.names=TRUE)
+  
+  for (i in 1:length(filenames)) {
+    
+    fname = paste(config$prefix, 'ETA_int', i, '_varB.dat', sep="")
+    temp = scan(file.path(config$base_folder, config$outdir, fname))
+    assign(paste("varU_int", i, sep = ""), temp)
+  }
   
   temp = data.frame("trait"=trt, "test_corr"=test_corr, "train_corr"=train_corr)
   res = rbind.data.frame(res,temp)
