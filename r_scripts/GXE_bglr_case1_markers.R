@@ -17,15 +17,15 @@ if (length(args) == 1){
   #as follows
   config = NULL
   config = rbind(config, data.frame(
-    base_folder = '~/Documents/freeclimb/g_x_e',
-    y = 'data/MD_2019/phenotypes.csv',
-    X = 'data/MD_2019/markers.csv',
-    trait = 'MD',
+    base_folder = '/home/freeclimb/GxE',
+    y = 'data/BD_2019/phenotypes.csv',
+    X = 'data/BD_2019/markers.csv',
+    trait = 'BD',
     year = 2019,
     nIter = 2000,
     burnIn = 200,
     thin = 5, ## default value in BGLR is 5
-    outdir = 'Analysis/BGLR/marker_regression',
+    outdir = 'Analysis/BGLR',
     prefix = "GxE_mrk_reg_",
     subsample = 1000, ## n. of SNPs to subsample randomly
     force_overwrite = FALSE
@@ -83,7 +83,8 @@ for (i in 1:ntraits) {
 
 ################################################
 print("Running the BGLR model - marker matrix")
-dir.create(file.path(config$base_folder, config$outdir), recursive = TRUE, showWarnings = FALSE)
+experiment = paste(config$trait, config$year, sep="_")
+dir.create(file.path(config$base_folder, config$outdir, experiment), recursive = TRUE, showWarnings = FALSE)
 
 
 #############################################
@@ -114,7 +115,7 @@ if (ntraits == 2) {
 ###############################
 
 
-outpath = file.path(config$base_folder, config$outdir, config$prefix)
+outpath = file.path(config$base_folder, config$outdir, experiment, config$prefix)
 fm = BGLR(y=y$value,ETA=LP,
   nIter=config$nIter, burnIn=config$burnIn, thin = config$thin,
   saveAt=outpath, groups=rep(1:ntraits,each=nrow(X))
@@ -122,7 +123,7 @@ fm = BGLR(y=y$value,ETA=LP,
 
 print("Writing out results")
 fname = paste(config$prefix, "BRR_res.RData", sep="")
-save(fm, file = file.path(config$base_folder, config$outdir, fname))
+save(fm, file = file.path(config$base_folder, config$outdir, experiment, fname))
 
 print("DONE!")
 
