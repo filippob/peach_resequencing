@@ -27,7 +27,7 @@ if (length(args) == 1){
     thin = 5, ## default value in BGLR is 5
     outdir = 'Analysis/BGLR/mrk_reg',
     prefix = "GxE_mrk_reg_",
-    subsample = 1000 , ## n. of SNPs to subsample randomly
+    subsample = 1000 , ## n. of SNPs to subsample randomly: specify a number for subsampling, write "" (empty string) to skip subsampling
     force_overwrite = FALSE
   ))
   
@@ -50,11 +50,11 @@ X = fread(fname, header = TRUE) ## 599 samples, 1279 markers (DArT markers --> 0
 X <- as.data.frame(X)
 
 if (!is.null(config$subsample)) {	
-	if (config$subsample > 0) {
+	if (as.numeric(config$subsample) > 0) {
 		
 		print("randomly subsampling matrix of markers")
 		print(paste("n. of markers randomly sampled is", config$subsample))
-		vec <- sample(1:ncol(X), config$subsample)
+		vec <- sample(1:ncol(X), as.numeric(config$subsample))
 		X <- X[,vec]
 	}
 }
