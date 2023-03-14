@@ -22,12 +22,12 @@ if (length(args) == 1){
     X = 'data/BD_2019/markers.csv',
     trait = 'BD',
     year = 2019,
-    nIter = 2000,
-    burnIn = 200,
+    nIter = 10000,
+    burnIn = 500,
     thin = 5, ## default value in BGLR is 5
-    outdir = 'Analysis/BGLR',
+    outdir = 'Analysis/BGLR/mrk_reg',
     prefix = "GxE_mrk_reg_",
-    subsample = 1000, ## n. of SNPs to subsample randomly
+    subsample = 50834, ## n. of SNPs to subsample randomly
     force_overwrite = FALSE
   ))
   
@@ -48,8 +48,17 @@ Y = fread(fname, header = TRUE) # grain yield evaluated in 4 different environme
 fname = file.path(config$base_folder, config$X) 
 X = fread(fname, header = TRUE) ## 599 samples, 1279 markers (DArT markers --> 0/1)
 X <- as.data.frame(X)
-vec <- sample(1:ncol(X), config$subsample)
-X <- X[,vec]
+
+if (!is.null(subsample)) {	
+	if (subsample > 0) {
+		
+		print("randomly subsampling matrix of markers")
+		print(paste("n. of markers randomly sampled is", subsample))
+		vec <- sample(1:ncol(X), config$subsample)
+		X <- X[,vec]
+	}
+}
+
 row.names(Y) <- paste("s",1:nrow(Y),sep="")
 row.names(X) <- paste("s",1:nrow(Y),sep="")
 
